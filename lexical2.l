@@ -4,6 +4,7 @@
 #include<stdlib.h>
 #include <string.h>
 #include "TSL.h"
+#include "qaud.h"
 int nb_ligne=1;
 int Col=1;
 extern YYSTYPE yylval;
@@ -31,13 +32,13 @@ com ("//"[^"\n"]*|"/*"([^"*/"]*|"\n")*"*/")
 "writeln" {rechercher(yytext,"Mot cle",0,0, 1,0); Col= Col + strlen(yytext); printf("%s\t", yytext);return mc_wr; }
 "END." {rechercher(yytext,"Mot cle",0,0, 1,0); Col= Col + strlen(yytext); printf("%s\t", yytext);return mc_endp; }
 {IDF} {yylval.s=strdup(yytext);rechercher(yytext,"IDF"," ",0,0,0);  Col= Col + strlen(yytext);
-if (yyleng>7) 
-printf ("Erreur Lexical:IDF trop long! line:%d ,Col:%d,E:%s \n ",nb_ligne, Col,yytext);
+if (yyleng>7){printf ("Erreur Lexical:IDF trop long! line:%d ,Col:%d,E:%s \n ",nb_ligne, Col,yytext);return 0;}
 printf ("%s\t", yytext);return idf; }
 {cst} {if(atof(yytext)==0){rechercher(yytext,"CST"," ",atof(yytext+1),0,0);yylval.r=atof(yytext+1);
-if(yylval.r<-32768)printf ("Erreur Lexical: CST trop long a la ligne %d a la colonne %d \n ",nb_ligne, Col);}else{
-rechercher(yytext,"CST"," ",atof(yytext),0,0);yylval.r=atof(yytext);
-if(yylval.r>32767)printf ("Erreur Lexical: CST trop long a la ligne %d a la colonne %d \n ",nb_ligne, Col);}  Col= Col + strlen(yytext);printf("%s\t", yytext);return cst; }
+if(yylval.r<-32768){printf ("Erreur Lexical: CST trop long a la ligne %d a la colonne %d \n ",nb_ligne, Col);return 0;}
+}else{rechercher(yytext,"CST"," ",atof(yytext),0,0);yylval.r=atof(yytext);
+if(yylval.r>32767){printf ("Erreur Lexical: CST trop long a la ligne %d a la colonne %d \n ",nb_ligne, Col);return 0;}
+}  Col= Col + strlen(yytext);printf("%s\t", yytext);return cst; }
 "{" {rechercher(yytext,"SEP",0,0, 2,0); Col= Col + strlen(yytext);printf ("%s\t", yytext);return acO;}
 "}" {rechercher(yytext,"SEP",0,0, 2,0); Col= Col + strlen(yytext);printf ("%s\t", yytext);return acF;}
 "=" {rechercher(yytext,"SEP",0,0, 2,0); Col= Col + strlen(yytext);printf ("%s\t", yytext);return aff;}
@@ -66,7 +67,7 @@ if(yylval.r>32767)printf ("Erreur Lexical: CST trop long a la ligne %d a la colo
 {com} {printf ("%s\t", yytext);}
 [ \t] {Col= Col + strlen(yytext);}
 \n {nb_ligne++;Col=1; printf("\n"); }
-. printf ("err lexicale:Entite lexicale non reconnue ,line:%d ,Col:%d,E:%s \n", nb_ligne, Col,yytext);
+. {printf ("err lexicale:Entite lexicale non reconnue ,line:%d ,Col:%d,E:%s \n", nb_ligne, Col,yytext);return 0;}
 
 
  

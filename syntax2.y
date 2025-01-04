@@ -3,6 +3,7 @@
 #include<stdlib.h>
 #include <string.h>
 #include "TSL.h"
+#include "qaud.h"
 extern int nb_ligne;
 extern int Col;
 int yylex();
@@ -11,6 +12,11 @@ int v;
 char* suavType;
 char* sauvName;
 float val=0;
+char tmp [20];
+char tabP [20];
+char Y[20];
+int Fin_if=0,deb_else=0,deb_wh=0,deb_for;
+int qc=0;
 %}
 
 %union {
@@ -79,7 +85,7 @@ LIST_INST: INST LIST_INST
          |                                
 ;	
 
-INST: INST_AFF
+INST: INST_AFF {EvaluExpre();}
 	| INST_RD
 	| INST_WR
 	| INST_FOR
@@ -87,13 +93,10 @@ INST: INST_AFF
 	| INST_IF
 ;
 
-
-
-
-OPERATOR: add 
-		| mul 
-		| Div 
-		| sub
+OPERATOR: add {empiler("+");}
+		| mul {empiler("*");}
+		| Div {empiler("/");}
+		| sub {empiler("-");}
 ;
 
 EXPRESSION: EXPRESSION OPERATOR T
@@ -101,20 +104,24 @@ EXPRESSION: EXPRESSION OPERATOR T
 ;
 
 T: OPERAND
- | po EXPRESSION pf 
+ | po {empiler("(");} EXPRESSION pf {empiler(")");}
 ;
 
 OPERAND: idf {
 		 if(ISdeclared($1)!=0){
 		 printf("err semantique:var non dec!,line:%d, col:%d,E:%s \n",nb_ligne,Col-1,$1);
-		 return 0;}else sauvName=strdup($1); 
+		 return 0;}else{ sauvName=strdup($1);
+		 empiler($1);} 
 		 }
-	   | cst {val=$1;}
+	   | cst {val=$1;sprintf(tmp,"%.2f",val);empiler(tmp);}
 	   | idf cro cst crf {
 	     if(ISdeclared($1)!=0){
 		 printf("err semantique:var non dec!,line:%d, col:%d,E:%s \n",nb_ligne,Col-1,$1);
 		 return 0;}
-		 else sauvName=strdup($1); }
+		 else {sauvName=strdup($1);
+		 sprintf(tabP, "%s[%.0f]", $1, $3);
+		 empiler(tabP);
+		 } }
 	   | idf cro idf crf {
 	     if(ISdeclared($1)!=0){
 		 printf("err semantique:var non dec!,line:%d, col:%d,E:%s \n",nb_ligne,Col-1,$1); 
@@ -123,11 +130,15 @@ OPERAND: idf {
 		 if(ISdeclared($3)!=0){
 		 printf("err semantique:var non dec!,line:%d, col:%d,E:%s \n",nb_ligne,Col-1,$3);
 		 return 0;}
-		 else sauvName=strdup($1); }}
+		 else{sauvName=strdup($1);
+		 sprintf(tabP, "%s[%s]", $1, $3);
+		 empiler(tabP);
+		 } 
+		 }}
 ;
 
 
-INST_AFF: idf aff EXPRESSION  pvg {
+INST_AFF: idf aff{empiler($1);empiler("=");} EXPRESSION  pvg {
 		  if(ISdeclared($1)!=0){
 		  printf("err semantique:var non dec!,line:%d, col:%d,E:%s \n",nb_ligne,Col-1,$1);
 		  return 0;}
@@ -147,8 +158,14 @@ INST_AFF: idf aff EXPRESSION  pvg {
 		  printf("err semantique:type incompatible!,line:%d,Col:%d\n",nb_ligne,Col);
 		  return 0;}}
 		  }
-		  }}}
-	    | idf cro cst crf aff EXPRESSION pvg {
+		  }}
+		  //sprintf(tmp,"%.2f",val);  
+          //quadr("=",tmp,"Vide",$1);
+		  empiler(";");
+
+		  }
+	    | idf cro cst crf aff {sprintf(tabP, "%s[%.0f]", $1, $3);
+		  empiler(tabP);empiler("=");}EXPRESSION pvg {
 		  if(ISdeclared($1)!=0){
 		  printf("err semantique:var non dec!,line:%d, col:%d,E:%s \n",nb_ligne,Col-1,$1); 
 		  return 0;}
@@ -163,8 +180,11 @@ INST_AFF: idf aff EXPRESSION  pvg {
 		  if(sameType2($1,sauvName)!=0){sauvName = NULL;
 		  printf("err semantique:type incompatible!,line:%d,Col:%d\n",nb_ligne,Col);
 		  return 0;}}
-		  }}}
-		| idf cro idf crf aff EXPRESSION pvg {
+		  }}empiler(";");
+
+		  }
+		| idf cro idf crf aff {sprintf(tabP, "%s[%s]", $1, $3);
+		  empiler(tabP);empiler("=");}EXPRESSION pvg {
 		  if(ISdeclared($1)!=0){
 		  printf("err semantique:var non dec!,line:%d, col:%d,E:%s \n",nb_ligne,Col-1,$1); 
 		  return 0;}
@@ -184,7 +204,10 @@ INST_AFF: idf aff EXPRESSION  pvg {
 		  if(sameType2($1,sauvName)!=0){sauvName = NULL;
 		  printf("err semantique:type incompatible!,line:%d,Col:%d\n",nb_ligne,Col);
 		  return 0;}}
-		  }}}}
+		  }}}empiler(";");
+	
+		  
+		  }
 
 ;
 
@@ -207,10 +230,20 @@ WR2: idf apo pt apo {if(ISdeclared($1)!=0){
    |
 ;
 
-INST_FOR: mc_for po idf dp P1 dp P1 dp P1 pf acO INST LIST_INST acF {
-		  if(ISdeclared($3)!=0){
+INST_FOR: D acO INST LIST_INST acF {
+		  sprintf(tmp,"%d",deb_for); 
+		  quadr("BR", tmp,"	", "	"); 
+		  sprintf(tmp,"%d",qc); 
+		  ajour_quad(deb_for,1,tmp);
+		  }
+;
+
+D: mc_for po idf dp P1 dp P1 dp P1 pf { if(ISdeclared($3)!=0){
 		  printf("err semantique:var non dec!,line:%d, col:%d,E:%s \n",nb_ligne,Col-1,$3);
-		  return 0;} }
+		  return 0;}
+		  deb_for=qc;
+		  quadr("BZ", "","temp_cond", "	");
+		  }
 ;
 
 P1: idf {
@@ -226,14 +259,38 @@ OP: sup
   | infE
 ;
 
-INST_WHILE: mc_while po COND pf acO INST LIST_INST acF
+INST_WHILE: C acO INST LIST_INST acF { sprintf(tmp,"%d",deb_wh); 
+									   quadr("BR", tmp,"	", "	"); 
+									   sprintf(tmp,"%d",qc); 
+									   ajour_quad(deb_wh,1,tmp);
+
+									 }
 ;
 
-INST_IF: mc_if po COND pf acO INST LIST_INST acF INST_ELS
+C: mc_while po COND pf { deb_wh=qc;
+						 quadr("BZ", "","temp_cond", "	");
+					     
+					   }
 ;
 
-INST_ELS: mc_else acO INST LIST_INST acF
-		|
+INST_IF: A { Fin_if=qc;
+			 quadr("BR", "","	", "	"); 
+			 sprintf(tmp,"%d",qc); 
+             ajour_quad(deb_else,1,tmp);} INST_ELS
+	   | A { sprintf(tmp,"%d",qc); 
+             ajour_quad(deb_else,1,tmp);}
+;
+
+A:B acO INST LIST_INST acF
+;
+
+B:mc_if po COND pf { deb_else=qc;
+					 quadr("BZ", "","temp_cond", "	");
+				   }
+;
+
+INST_ELS: mc_else acO INST LIST_INST acF { sprintf(tmp,"%d",qc);  
+										   ajour_quad(Fin_if,1,tmp);}
 ;
 
 COND: EXPRESSION OPP EXPRESSION avec
@@ -256,6 +313,10 @@ OPP: OP
 int main(){
     yyparse(); 
 	afficherL();
+	//affichPILE();
+	//EvaluExpre();
+	afficher_qdr();
+	
 }
 
 int yywrap()

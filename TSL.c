@@ -1,7 +1,7 @@
 /*
 flex lexical2.l
 bison -d syntax2.y
-gcc lex.yy.c syntax2.tab.c TSL.c -o tpp.exe -lfl -ly
+gcc lex.yy.c syntax2.tab.c TSL.c qaud.c -o tpp.exe -lfl -ly
 tpp<exp.txt
 */
 /****************CREATION DE LA TABLE DES SYMBOLES ******************/
@@ -184,7 +184,7 @@ switch(y)
 void afficherL(){
 
 
-printf("/***************Table DES symboles IDF*************/\n");
+printf("\n/***************Table DES symboles IDF*************/\n");
 printf("_______________________________________________________________________________\n");
 printf("\t| Nom_Entite |  Code_Entite | Type_Entite | Val_Entite | taille_Entite\n");
 printf("_______________________________________________________________________________\n");
@@ -192,7 +192,7 @@ printf("________________________________________________________________________
 Qt=tab;
 while(Qt != NULL){
     
-        printf("\t|%10s |%15s | %12s | %12f | %10d\n",Qt->name,Qt->code,Qt->type,Qt->val,Qt->size);
+        printf("\t|%11s |%13s | %11s | %10f | %13d\n",Qt->name,Qt->code,Qt->type,Qt->val,Qt->size);
         Qt=Qt->svt;
 }  
 Qt=NULL;
