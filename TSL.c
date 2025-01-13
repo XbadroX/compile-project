@@ -1,7 +1,7 @@
 /*
 flex lexical2.l
 bison -d syntax2.y
-gcc lex.yy.c syntax2.tab.c TSL.c qaud.c -o tpp.exe -lfl -ly
+gcc lex.yy.c syntax2.tab.c TSL.c qaud.c recursiv.c -o tpp.exe -lfl -ly 
 tpp<exp.txt
 */
 /****************CREATION DE LA TABLE DES SYMBOLES ******************/
@@ -242,12 +242,12 @@ void insererType(char entite[], char type[]){
 	
 }
 
-void CstCode(char entite[]){
+void CstCode(char entite[],float val){
 	Q=tab;
 	while(Q != NULL ){
 		if(strcmp(Q->name , entite)==0){
 			strcpy(Q->code , "CST");
-			
+			Q->val=val;
 			break;
 		}
 		Q=Q->svt;
@@ -293,6 +293,44 @@ int ISdeclared(char entite[]){
 	
 }
 
+int ISExist(char entite[]){
+	int i=0;
+	Q=tab;
+	while(Q != NULL ){
+		if(strcmp(Q->name , entite)==0 ){
+			
+			i=1;
+
+		}
+		Q=Q->svt;
+		
+	}
+	Q=NULL;
+	
+	return i;
+	
+}
+
+float Valeur(char entite[]){
+	float i;
+	Q=tab;
+	
+
+	while(Q != NULL ){
+		if(strcmp(Q->name , entite)==0 ){
+			
+			i=Q->val;
+
+		}
+		Q=Q->svt;
+		
+	}
+	Q=NULL;
+	
+	return i;
+	
+}
+
 int sameType(char entite[],float val){
 	int i =0;
 	char type1[10];
@@ -310,13 +348,13 @@ int sameType(char entite[],float val){
 		Q=Q->svt;
 		
 	}
+	if(val==(int)val) strcpy(  type2,"INTEGER");
+	else strcpy(  type2,"FLOAT");
 	Q=NULL;
 	if(strcmp(type2 , type1)!=0 && strcmp(type1 , "FLOAT")!=0){
 		i=1;
-	}else{
-		p->val=val;
-	
 	}
+	
 	if(val == 0) i= 0;
 	
 	return i;
@@ -435,9 +473,55 @@ int sameType2(char entite[],char entite2[]){
 	Q=NULL;
 	if(strcmp(type2 , type1)!=0 && strcmp(type1 , "FLOAT")!=0){
 		i=1;
-	}else{
-		p->val=q->val;
 	}
 	return i;
 }
 
+void insererval(char entite[], float val){
+	
+	Q=tab;
+	while(Q != NULL ){
+		if(strcmp(Q->name , entite)==0){
+			Q->val=val;
+			
+			break;
+		}
+		Q=Q->svt;
+		
+	}
+	Q=NULL;
+
+}
+
+char* TYPE(char entite[]){
+	Q=tab;
+	while(Q != NULL ){
+		if(strcmp(Q->name , entite)==0 ){
+			return Q->type;
+			break;
+		}
+		Q=Q->svt;
+		
+	}
+	Q=NULL;
+	
+}
+
+void initIDF(){
+
+	Q=tab;
+	while(Q != NULL ){
+		if(strcmp(Q->code , "IDF")==0){
+			Q->val=0;
+			
+		}
+		Q=Q->svt;
+		
+	}
+	Q=NULL;
+	
+	
+	
+	
+	
+}

@@ -1,25 +1,93 @@
-PROGRAMME Pr0_jet   
+PROGRAMME Delta_0   
 VAR{    
-FLOAT b,c,A,X,B,D,C;
-INTEGER a,F1,tab[10],i;
-CONST m = 9.5;
+FLOAT a,b,c,Delta,X1,X2,X,Px;
+INTEGER i,j,k,Root,fact,N;
+CONST C = 9.5;
 }
 
 BEGIN 
+a=1;
+b=1;
+c=(-2);
+Delta= b * b - 4 * a * c;
 
-//tab[m]=tab[6]+(5-tab[F1]+(-8));
-//A= ( ( X + 7 + B ) / (D+ 8 - 2 ) ) / 7 ;
-//B=((B+C)-((D+5)/7))*10;
-//B=( 8 * C ) /  ( D + A - 5 );
-//B=((3*5+B)*( D + A - 5 ));
-//X=((((A+B)))/7);
-//A=(B/9)+((A+B));
-IF(i==0){
-	X=5.5;
-	A= X * (7 + B);
+
+
+
+IF(Delta < 0){
+
+	writeln('Pas de Sol:');
+
+
 }ELSE{
-	X=0;
+
+
+	IF(Delta==0){
+		writeln('Double Sol :');
+		X1=(0-b)/(2*a);
+		
+	
+	
+	}ELSE{
+		writeln('Deux Sol :');
+		
+		i=1;
+		j=1;
+		
+		
+		WHILE(j < Delta){
+			
+			j=i*i;
+			i=i+1;				
+
+		}
+	
+		Root=i-1;
+		
+		
+		X1= ( 0 - (b + Root) ) / ( 2 * a ) ;
+		
+		X2= ( 0 - (b - Root) ) / ( 2 * a ) ;
+		
+	}
+
 }
+X=5;
+
+Px= a * X * X + b * X + c;
+
+
+
+writeln('calcul fact :');
+
+fact=(-1);
+
+
+N=6;
+IF(fact <=0 ){ 
+	IF(fact ==0 ){ 
+
+		fact=1;
+
+	}ELSE{
+	
+		writeln('pas de fact neg :');
+		fact=0;
+	
+	}
+	
+
+}ELSE{
+	FOR(k:1:1:N){
+
+		fact=fact*k;
+
+
+	}
+}
+
+
+
 
 
 END.
